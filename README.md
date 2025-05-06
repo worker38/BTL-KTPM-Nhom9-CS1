@@ -1,32 +1,50 @@
-# CASE STUDY 1
-Dưới đây là một chương trình đơn giản sử dụng `express.js`, có mục tiêu để rút gọn link. Chương trình có thể chưa hoàn toàn được tối ưu.
+# CASE STUDY 1 — Phiên bản cải tiến
 
-## Hướng dẫn cài đặt
-```sh
-# Cài đặt các gói liên quan
-$ npm install
-# Tạo folder cho database
-$ mkdir db
-# Khởi chạy ứng dụng
-$ npm start 
+Đây là phiên bản cải tiến của chương trình rút gọn link sử dụng Express.js, được tối ưu hóa để hiệu năng cao hơn, ổn định hơn và sẵn sàng triển khai thực tế.
+
+Chương trình hỗ trợ 3 endpoint chính:
+- `GET /short/:id`: tự động chuyển hướng đến URL gốc từ mã rút gọn.
+- `POST /create`: tạo mã rút gọn mới từ URL đầu vào (truyền qua query hoặc body).
+- `GET /health`: kiểm tra tình trạng kết nối đến cơ sở dữ liệu và Redis.
+
+Về mặt kiến trúc, chương trình được thiết kế lại theo mô hình MVC kết hợp Repository pattern. Một số cải tiến nổi bật gồm:
+- Sử dụng Cluster để tận dụng đa nhân CPU, giúp server xử lý song song hiệu quả hơn.
+- Tích hợp Redis làm bộ nhớ đệm giúp giảm tải cho database và tăng tốc độ phản hồi.
+- Sử dụng ORM Sequelize để quản lý dữ liệu theo mô hình đối tượng, dễ mở rộng và bảo trì.
+- Triển khai các middleware bảo mật như `helmet`, `rate-limit` và kiểm tra URL đầu vào bằng validator.
+- Giao diện người dùng đơn giản phục vụ frontend tĩnh nằm trong thư mục `public/index.html`.
+- Áp dụng cơ chế sinh mã rút gọn ngắn gọn, duy nhất bằng cách kết hợp timestamp và Redis counter, mã hóa bằng Base62.
+- Xử lý lỗi tập trung giúp phản hồi rõ ràng và dễ debug.
+
+
+### Hướng dẫn chạy chương trình:
+
+1. Cài đặt thư viện:
+```bash
+npm install
 ```
 
-## Mô Tả
-| Endpoint | Phương thức | Mục tiêu
-|--|:--:|--|
-| /short/:id | GET | Trả về đường dẫn gốc
-| /create?url= | POST | Trả về ID được thu gọn
+2. Tạo thư mục database nếu chưa có:
+```bash
+mkdir db
+```
 
+3. Khởi động Redis (cài Redis local hoặc dùng Docker).
 
-## Yêu cầu triển khai
-| Mức độ | Mô tả |
-|--|--|
-| ![Static Badge](https://img.shields.io/badge/OPTIONAL-medium-yellow)  | Tối ưu chương trình trên |
-| ![Static Badge](https://img.shields.io/badge/OPTIONAL-easy-green) | Triển khai thành web hoàn chỉnh |
-| ![Static Badge](https://img.shields.io/badge/OPTIONAL-hard-red) | Sử dụng cache để tăng hiệu suất ứng dụng |
-| ![Static Badge](https://img.shields.io/badge/REQUIRED-easy-green)  | Cài đặt [middleware](https://expressjs.com/en/guide/using-middleware.html) cho chương trình |
-| ![Static Badge](https://img.shields.io/badge/REQUIRED-medium-yellow) | Thêm lớp persistent bằng cách sử dụng ORM (Object-Relational Mapping) |
-| ![Static Badge](https://img.shields.io/badge/REQUIRED-medium-yellow) | *Đánh giá* và *cải tiến* hiệu năng dựa trên một mẫu kiến trúc tuỳ chọn. |
+4. Khởi chạy chương trình:
+```bash
+npm start
+```
+Mặc định server sẽ chạy tại `http://localhost:3000`.
 
-Ngoài ra, các bạn có thể tuỳ chọn bổ sung thêm một số phần triển khai khác.
+Chương trình đã được kiểm thử hiệu năng bằng autocannon với 100 kết nối song song và pipelining 10. Nhờ sử dụng middleware warmupCache(), hệ thống đạt tỷ lệ cache hit cao với các URL được truy cập thường xuyên. ID được sinh ra nhanh chóng (< 1ms) và TTL của Redis được tự động điều chỉnh theo tần suất truy cập để tối ưu bộ nhớ.
 
+### Danh sách các yêu cầu từ đề bài đã được hoàn thành:
+
+| Mức độ | Mô tả yêu cầu                                               | Trạng thái |
+|--------|-------------------------------------------------------------|------------|
+| Easy   | Cài middleware bảo mật + URL validator                      | ✅ Đã xong |
+| Easy   | Triển khai thành web hoàn chỉnh có frontend                 | ✅ Đã xong |
+| Medium | Dùng ORM Sequelize thay cho SQLite raw query                | ✅ Đã xong |
+| Medium | Đánh giá và cải tiến theo mẫu kiến trúc hiệu năng cao      | ✅ Đã xong |
+| Hard   | Sử dụng Redis cache với warming + auto-ttl                  | ✅ Đã xong |
